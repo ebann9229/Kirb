@@ -29,6 +29,14 @@ const adminSchema = new Schema({
 		required: true,
 		minlength: 6,
 		maxlength: 1024
+	},
+	resetPasswordToken: {
+		type: String,
+		default: null
+	},
+	resetPasswordExpiry: {
+		type: String,
+		default: null
 	}
 })
 

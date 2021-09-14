@@ -1,5 +1,9 @@
 /* eslint-disable indent */
+const Fawn = require('fawn')
+
 const Business = require('../models/businesses')
+const User = require('../models/users')
+const Review = require('../models/review')
 
 const create = async (req, res) => {
 	let business = await Business.findOne({name: req.body.name})
@@ -13,7 +17,14 @@ const create = async (req, res) => {
 		admin: req.user._id,
 		description: req.body.description,
 		phoneNumber: req.body.phoneNumber,
-		websiteUrl: req.body.websiteUrl
+		websiteUrl: req.body.websiteUrl,
+		businessHours: req.body.businessHours,
+		city: req.body.city,
+		street: req.body.street,
+		facebook: req.body.facebook,
+		twitter: req.body.twitter,
+		instagram: req.body.instagram,
+		youtube: req.body.youtube
 	})
 
 	await business.save()
@@ -108,8 +119,29 @@ const uploadPicture = async (req, res) => {
 }
 
 const review = async (req, res) => {
-	
+	const user = User.findById(req.user._id)
+	if(!user) return res.status(401).json({general: 'Please login again'})
+
+	const business = Business.findById(req.body.business)
+	if(!business) return res.status(404).json({business: 'The bussiness was not found'})
+
+	const review = new Review({
+		content: req.body.content,
+		madeBy: req.user._id
+	})
+
+	new Fawn.Task()
+		.update('businesses', {_id: business._id}, {
+			$push: { reviews: review._id}
+		})
+		.save('reviews', review)
+		.run()
+
+	res.send('Success')
+
 }
+
+
 module.exports = {
 	create,
 	getAll,
@@ -117,5 +149,6 @@ module.exports = {
 	getNearest,
 	update,
 	remove,
-	uploadPicture
+	uploadPicture,
+	review
 }

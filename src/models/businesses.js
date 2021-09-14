@@ -36,14 +36,17 @@ const businessSchema = mongoose.Schema({
 			required: true
 		}
 	},
-	ratings: [{
+	reviews: {
+		type: [mongoose.Schema.Types.ObjectId],
+		ref: 'Review'
+	},
+	rating: {
+		type: Number
+	},
+	events: [{
 		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Rating'
+		ref: 'Event'
 	}],
-	// events: [{
-	// 	type: mongoose.Schema.Types.ObjectId,
-	// 	ref: 'Event'
-	// }],
 	categories: [{
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Category'
@@ -56,6 +59,27 @@ const businessSchema = mongoose.Schema({
 	},
 	pictures: {
 		type: [String]
+	},
+	city: {
+		type: String
+	},
+	street: {
+		type: String
+	},
+	facebook: {
+		type: String
+	},
+	twitter: {
+		type: String
+	},
+	youtube: {
+		type: String
+	},
+	instagram: {
+		type: String
+	},
+	businessHours: {
+		type: String
 	}
 })
 

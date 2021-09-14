@@ -24,15 +24,11 @@ const userSchema = new Schema({
 		minlength: 6,
 		maxlength: 1024
 	},
-	favorite: {
-		type: Schema.Types.ObjectId,
+	favorites: {
+		type: [Schema.Types.ObjectId],
 		ref: 'Business'
-	},
-	role: {
-		type: String,
-		enum: ['user', 'admin', 'superadmin'],
-		default: 'user'
 	}
+	
 })
 
 userSchema.methods.generateAuthToken = function () {
