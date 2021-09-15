@@ -1,26 +1,28 @@
 /* eslint-disable indent */
-const Fawn = require('fawn')
+const { startSession } = require('mongoose')
 
 const Business = require('../models/businesses')
 const User = require('../models/users')
 const Review = require('../models/review')
 
+
 const create = async (req, res) => {
 	let business = await Business.findOne({name: req.body.name})
 	if(business) return res.status(400).json({name: 'A business with the same name has already been registered'})
 
+	const location = [req.body.longitude, req.body.latitude]
 	business = new Business({
 		name: req.body.name,
 		location: {
-			coordinates: req.body.location
+			coordinates: location
 		},
 		admin: req.user._id,
 		description: req.body.description,
 		phoneNumber: req.body.phoneNumber,
 		websiteUrl: req.body.websiteUrl,
 		businessHours: req.body.businessHours,
-		city: req.body.city,
-		street: req.body.street,
+		address: req.body.category,
+		category: req.body.category,
 		facebook: req.body.facebook,
 		twitter: req.body.twitter,
 		instagram: req.body.instagram,
@@ -33,22 +35,14 @@ const create = async (req, res) => {
 
 const getAll = async (req, res) => {
 	let match = {accepted: true}
-	let sort = {}
 
 	if(req.query.category) {
 		match.category = req.query.category
 	}
-	if(req.query.sortBy) {
-		const part = req.query.sortBy.split(':')
-		sort = part[1] === 'desc' ? '-' + part[0] : part[0]
-	}
-
+	
 	const businesses = await Business
-			.find(match)
-			.select('-admin')
-			.sort(sort)
-			.limit(parseInt(req.query.limit || 0))
-			.skip(parseInt(req.query.skip || 0))
+			.find()
+			.select('-admin -reviews -events')
 
 	res.send(businesses)
 }
@@ -75,7 +69,7 @@ const getNearest = async (req, res) => {
 }
 
 const getOne = async (req, res) => {
-	const business = await Business.findById(req.params.id)
+	const business = await (await Business.findById(req.params.id)).populate
 	if(!business) return res.status(404).json({business: 'The business was not found'})
 
 	res.send(business)
@@ -119,6 +113,7 @@ const uploadPicture = async (req, res) => {
 }
 
 const review = async (req, res) => {
+	const session = await startSession()
 	const user = User.findById(req.user._id)
 	if(!user) return res.status(401).json({general: 'Please login again'})
 
@@ -130,15 +125,44 @@ const review = async (req, res) => {
 		madeBy: req.user._id
 	})
 
-	new Fawn.Task()
-		.update('businesses', {_id: business._id}, {
-			$push: { reviews: review._id}
-		})
-		.save('reviews', review)
-		.run()
+	try {
+		session.startTransaction()
+		await review.save()
+		await business.review.push(review._id)
 
-	res.send('Success')
+		await session.commitTransaction()
+		session.endSession()
+		res.send('Success')
+	} catch (err) {
+		await session.abortTransaction()
+		session.endSession()
+		console.log(err)
+		res.send('Error')
+	}
 
+}
+
+const like = async (req, res) => {
+	const session = await startSession()
+	const user = User.findById(req.user._id)
+	if(!user) return res.status(401).json({general: 'Please login again'})
+
+	const business = Business.findById(req.body.business)
+	if(!business) return res.status(404).json({business: 'The business was not found'})
+
+	try {
+		session.startTransaction()
+		await user.favorite.push(business._id)
+		await business.updateOne({$inc: {likeCount: 1}})
+
+		await session.commitTransaction()
+		session.endSession()
+	} catch (err) {
+		await session.abortTransaction()
+		session.endSession()
+		console.log(err)
+		res.send('Error')
+	}
 }
 
 
@@ -150,5 +174,6 @@ module.exports = {
 	update,
 	remove,
 	uploadPicture,
-	review
+	review,
+	like
 }

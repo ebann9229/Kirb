@@ -2,21 +2,20 @@ const mongoose = require('mongoose')
 const { Schema } = mongoose
 
 const eventSchema = new Schema({
+	name: {
+		type: String,
+		required: true
+	},
 	description: {
 		type: String
 	},
 	date: {
-		type: Date
+		type: Date,
+		required: true
 	},
-	location: {
-		type: {
-			type: String,
-			default: 'Point'
-		},
-		coordinates: {
-			type: [Number],
-			required: true
-		}
+	business: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'Business'
 	}
 })
 

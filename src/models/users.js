@@ -25,7 +25,7 @@ const userSchema = new Schema({
 		maxlength: 1024
 	},
 	favorites: {
-		type: [Schema.Types.ObjectId],
+		type: [mongoose.Schema.Types.ObjectId],
 		ref: 'Business'
 	}
 	

@@ -4,8 +4,6 @@ const businessSchema = mongoose.Schema({
 	name: {
 		type: String,
 		required: true,
-		minlength: 5,
-		maxlength: 50,
 		lowercase: true,
 		unique: 1
 	},
@@ -19,9 +17,11 @@ const businessSchema = mongoose.Schema({
 	},
 	phoneNumber:{
 		type: String,
-		required: true,
-		minlength: 10,
-		maxlength: 10
+		
+	},
+	events: {
+		type: [mongoose.Schema.Types.ObjectId],
+		ref: 'Event'
 	},
 	websiteUrl: {
 		type: String
@@ -43,14 +43,10 @@ const businessSchema = mongoose.Schema({
 	rating: {
 		type: Number
 	},
-	events: [{
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Event'
-	}],
-	categories: [{
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Category'
-	}],
+	category: {
+		type: String,
+		enum: []
+	},
 	accepted: {
 		type: Boolean
 	},
@@ -60,10 +56,7 @@ const businessSchema = mongoose.Schema({
 	pictures: {
 		type: [String]
 	},
-	city: {
-		type: String
-	},
-	street: {
+	address: {
 		type: String
 	},
 	facebook: {
@@ -80,6 +73,9 @@ const businessSchema = mongoose.Schema({
 	},
 	businessHours: {
 		type: String
+	},
+	likeCount: {
+		type: Number
 	}
 })
 

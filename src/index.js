@@ -10,12 +10,14 @@ const config = require('./startup/config')
 
 const app = express()
 
+
 app.use(cors())
 app.use(express.json())
 app.use(compression())
 app.use(routes)
 app.use(error)
 db()
+
 config()
 
 // eslint-disable-next-line no-undef
