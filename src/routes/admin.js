@@ -4,7 +4,8 @@ const router = new express.Router()
 const {
 	login,
 	register,
-	forgotPassword
+	forgotPassword,
+	resetPassword
 } = require('../controllers/adminController')
 
 // @route POST /admin/login
@@ -21,5 +22,7 @@ router.post('/', register)
 // @desc Send reset token
 // @access Public
 router.post('/forgot-password', forgotPassword)
+
+router.post('/reset-password', resetPassword)
 
 module.exports = router

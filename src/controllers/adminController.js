@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt')
 const crypto = require('crypto')
-const nodemailer = require('nodemailer')
 
+const mail = require('../utils/mail')
 const Admin = require('../models/admins')
 
 const login = async (req, res) => {
@@ -42,33 +42,34 @@ const forgotPassword = async (req, res) => {
 		resetPasswordExpiry: Date.now() + 86400000
 	})
 
-	res.send('A reset token is sent to your email. It expires in one hour')
+	if(!admin) return res.send('A reset token is sent to your email. It expires in one day')
 
-	let testAccount = await nodemailer.createTestAccount()
+	await mail(token, admin.email).catch(console.error)
+	res.send('A reset token is sent to your email. It expires in one day')
+}
 
-	let transporter = nodemailer.createTransport({
-		host: 'smtp.ethereal.email',
-		port: 587,
-		secure: false,
-		auth: {
-			user: testAccount.user,
-			pass: testAccount.pass
+const resetPassword = async (req, res) => {
+	const admin = await Admin.findOne({ 
+		resetPasswordToken: req.body.token,
+		resetPasswordExpiry: {
+			$gt: Date.now()
 		}
 	})
+	if(!admin) return res.status(400).send('password reset token is invalid or has been expired')
 
-	let info = await transporter.sendMail({
-		from: ' "Christian" <kirb@test.com>',
-		to: 'eyobmuktar4@gmail.com',
-		subject: 'Link To Reset Password',
-		text: `Please click the following link or paste this into your browser to complete the process
-				http://localhost:3002/reset/${token}`
+	const salt = await bcrypt.genSalt(10)
+	const newPassword = await bcrypt.hash(req.body.password, salt)
+	await admin.update({ 
+		password: newPassword, 
+		resetPasswordToken: null, 
+		resetPasswordExpiry: null
 	})
-
-	console.log(info.messageId)
+		
 }
 
 module.exports = {
 	login,
 	register,
-	forgotPassword
+	forgotPassword,
+	resetPassword
 }
