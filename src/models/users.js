@@ -24,10 +24,10 @@ const userSchema = new Schema({
 		minlength: 6,
 		maxlength: 1024
 	},
-	favorites: {
-		type: [mongoose.Schema.Types.ObjectId],
+	favorites:[{
+		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Business'
-	}
+	}]
 	
 })
 

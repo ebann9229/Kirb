@@ -12,10 +12,6 @@ const eventSchema = new Schema({
 	date: {
 		type: Date,
 		required: true
-	},
-	business: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Business'
 	}
 })
 

@@ -19,10 +19,10 @@ const businessSchema = mongoose.Schema({
 		type: String,
 		
 	},
-	events: {
-		type: [mongoose.Schema.Types.ObjectId],
+	events: [{
+		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Event'
-	},
+	}],
 	websiteUrl: {
 		type: String
 	},
@@ -36,16 +36,15 @@ const businessSchema = mongoose.Schema({
 			required: true
 		}
 	},
-	reviews: {
-		type: [mongoose.Schema.Types.ObjectId],
+	reviews: [{
+		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Review'
-	},
+	}],
 	rating: {
 		type: Number
 	},
 	category: {
 		type: String,
-		enum: []
 	},
 	accepted: {
 		type: Boolean

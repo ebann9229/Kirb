@@ -4,7 +4,7 @@ const { startSession } = require('mongoose')
 const Business = require('../models/businesses')
 const User = require('../models/users')
 const Review = require('../models/review')
-
+const Event = require('../models/events')
 
 const create = async (req, res) => {
 	let business = await Business.findOne({name: req.body.name})
@@ -16,12 +16,12 @@ const create = async (req, res) => {
 		location: {
 			coordinates: location
 		},
-		admin: req.user._id,
+		admin: req.body.user_id,
 		description: req.body.description,
 		phoneNumber: req.body.phoneNumber,
 		websiteUrl: req.body.websiteUrl,
 		businessHours: req.body.businessHours,
-		address: req.body.category,
+		address: req.body.address,
 		category: req.body.category,
 		facebook: req.body.facebook,
 		twitter: req.body.twitter,
@@ -50,7 +50,6 @@ const getAll = async (req, res) => {
 const getNearest = async (req, res) => {
 	const latt = req.query.latt
 	const long = req.query.long
-	console.log(latt, long)
 
 	const businesses = await Business.aggregate([
 		{ '$geoNear': {
@@ -69,7 +68,7 @@ const getNearest = async (req, res) => {
 }
 
 const getOne = async (req, res) => {
-	const business = await (await Business.findById(req.params.id)).populate
+	const business = await Business.findById(req.params.id).populate('events').populate('reviews')
 	if(!business) return res.status(404).json({business: 'The business was not found'})
 
 	res.send(business)
@@ -84,9 +83,16 @@ const remove = async (req, res) => {
 
 const update = async (req, res) => {
 	const business = await Business.findByIdAndUpdate(req.params.id, {
-		name: req.body.name,
 		description: req.body.description,
-		accepted: req.body.accepted
+		phoneNumber: req.body.phoneNumber,
+		websiteUrl: req.body.websiteUrl,
+		businessHours: req.body.businessHours,
+		address: req.body.address,
+		category: req.body.category,
+		facebook: req.body.facebook,
+		twitter: req.body.twitter,
+		instagram: req.body.instagram,
+		youtube: req.body.youtube
 	}, { new: true })
 
 	if(!business) return res.status(404).json({business: 'The business was not found'})
@@ -114,10 +120,10 @@ const uploadPicture = async (req, res) => {
 
 const review = async (req, res) => {
 	const session = await startSession()
-	const user = User.findById(req.user._id)
+	const user = await User.findById(req.user._id)
 	if(!user) return res.status(401).json({general: 'Please login again'})
 
-	const business = Business.findById(req.body.business)
+	const business = await Business.findById(req.body.business)
 	if(!business) return res.status(404).json({business: 'The bussiness was not found'})
 
 	const review = new Review({
@@ -128,7 +134,8 @@ const review = async (req, res) => {
 	try {
 		session.startTransaction()
 		await review.save()
-		await business.review.push(review._id)
+		business.reviews.push(review._id)
+		await business.save()
 
 		await session.commitTransaction()
 		session.endSession()
@@ -144,19 +151,23 @@ const review = async (req, res) => {
 
 const like = async (req, res) => {
 	const session = await startSession()
-	const user = User.findById(req.user._id)
+	const user = await User.findById(req.user._id)
 	if(!user) return res.status(401).json({general: 'Please login again'})
 
-	const business = Business.findById(req.body.business)
+	if(user.favorites.indexOf(req.body.business) > -1) return res.status(400).json({general: 'You already liked this business'})
+
+	const business = await Business.findById(req.body.business)
 	if(!business) return res.status(404).json({business: 'The business was not found'})
 
 	try {
 		session.startTransaction()
-		await user.favorite.push(business._id)
+		user.favorites.push(business._id)
+		await user.save()
 		await business.updateOne({$inc: {likeCount: 1}})
 
 		await session.commitTransaction()
 		session.endSession()
+		res.send('Success')
 	} catch (err) {
 		await session.abortTransaction()
 		session.endSession()
@@ -165,6 +176,45 @@ const like = async (req, res) => {
 	}
 }
 
+const createEvent = async (req, res) => {
+	const session = await startSession()
+
+	const business = await Business.findById(req.body.business)
+	if(!business) return res.status(404).json({business: 'The bussiness was not found'})
+
+	const event = new Event({
+		name: req.body.name,
+		description: req.body.description,
+		date: req.body.date
+	})
+	console.log(business)
+	try {
+		session.startTransaction()
+		await event.save()
+		business.events.push(event._id)
+		await business.save()
+
+		await session.commitTransaction()
+		session.endSession()
+		res.send('Success')
+	} catch (err) {
+		await session.abortTransaction()
+		session.endSession()
+		console.log(err)
+		res.send('Error')
+	}
+
+}
+
+const approve = async (req, res) => {
+	const business = await Business.findByIdAndUpdate(req.params.id, {
+		accepted: true
+	}, { new: true})
+
+	if(!business) return res.status(404).json({business: 'The business was not found'})
+
+	res.send(business)
+}
 
 module.exports = {
 	create,
@@ -175,5 +225,7 @@ module.exports = {
 	remove,
 	uploadPicture,
 	review,
-	like
+	like,
+	createEvent,
+	approve
 }

@@ -7,14 +7,12 @@ const adminSchema = new Schema({
 	firstName: {
 		type: String,
 		required: true,
-		maxlength: 20,
 		trim: true,
 		lowercase: true,
 	},
 	lastName: {
 		type: String,
 		required: true,
-		maxlength: 20,
 		trim: true,
 		lowercase: true,
 	},
@@ -37,12 +35,17 @@ const adminSchema = new Schema({
 	resetPasswordExpiry: {
 		type: String,
 		default: null
+	},
+	role: {
+		type: String,
+		enum: ['business_admin', 'super_admin'],
+		default: 'business_admin'
 	}
 })
 
 adminSchema.methods.generateAuthToken = function () {
 	// eslint-disable-next-line no-undef
-	const token = jwt.sign({isAdmin: true,_id: this.id}, process.env.KIRB_JWTPRIVATEKEY)
+	const token = jwt.sign({isAdmin: true,_id: this._id, role: this.role}, process.env.KIRB_JWTPRIVATEKEY)
 	return token
 }
 
