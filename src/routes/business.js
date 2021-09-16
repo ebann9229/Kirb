@@ -10,11 +10,13 @@ const {
 	createEvent,
 	like,
 	review,
-	approve
+	approve,
+	getMyBusiness
 } = require('../controllers/businessController')
 // MIddlewares
 const auth = require('../middlewares/auth')
 const isAdmin = require('../middlewares/isAdmin')
+const isSuperAdmin = require('../middlewares/isSuperAdmin')
 const parser = require('../middlewares/upload')
 
 const router = express.Router()
@@ -61,6 +63,7 @@ router.post('/event',  createEvent)
 
 router.post('/like',auth, like)
 router.post('/review',auth, review)
-router.patch('/approve/:id', approve)
+router.patch('/approve/:id',auth, isSuperAdmin, approve)
+router.get('/own', auth, isAdmin, getMyBusiness )
 
 module.exports = router

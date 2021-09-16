@@ -9,7 +9,8 @@ const create = async (req, res) => {
 		name: req.body.name,
 		description: req.body.description,
 		business: req.body.business,
-		date: req.body.date
+		startDate: req.body.startDate,
+		endDate: req.body.endDate
 	})
 
 	await event.save()
@@ -22,10 +23,7 @@ const getAll = async (req, res) => {
 }
 
 const getAllInBusiness = async (req, res) => {
-	
-
 	const events = await Event.find({business: req.query.business})
-
 
 	res.send(events)
 }

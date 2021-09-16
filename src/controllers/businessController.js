@@ -20,7 +20,6 @@ const create = async (req, res) => {
 		description: req.body.description,
 		phoneNumber: req.body.phoneNumber,
 		websiteUrl: req.body.websiteUrl,
-		businessHours: req.body.businessHours,
 		address: req.body.address,
 		category: req.body.category,
 		facebook: req.body.facebook,
@@ -41,7 +40,7 @@ const getAll = async (req, res) => {
 	}
 	
 	const businesses = await Business
-			.find()
+			.find(match)
 			.select('-admin -reviews -events')
 
 	res.send(businesses)
@@ -67,6 +66,13 @@ const getNearest = async (req, res) => {
 	res.send(businesses)
 }
 
+const getMyBusiness = async (req, res) => {
+	const business = await Business.findOne({admin: req.user._id})
+	if (!business) return res.status(404).json({business: 'You have no business'})
+
+	res.send(business)
+}
+
 const getOne = async (req, res) => {
 	const business = await Business.findById(req.params.id).populate('events').populate('reviews')
 	if(!business) return res.status(404).json({business: 'The business was not found'})
@@ -86,7 +92,6 @@ const update = async (req, res) => {
 		description: req.body.description,
 		phoneNumber: req.body.phoneNumber,
 		websiteUrl: req.body.websiteUrl,
-		businessHours: req.body.businessHours,
 		address: req.body.address,
 		category: req.body.category,
 		facebook: req.body.facebook,
@@ -227,5 +232,6 @@ module.exports = {
 	review,
 	like,
 	createEvent,
-	approve
+	approve,
+	getMyBusiness
 }
