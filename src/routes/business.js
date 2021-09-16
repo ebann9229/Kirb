@@ -54,7 +54,7 @@ router.delete('/:id', auth, isAdmin, remove)
 // @route Patch /business/upload/id
 // @desc Add a business photo
 // @access Business Admins
-router.patch('/upload/:id', auth, isAdmin, parser.fields([{name: 'cover', max: 1}, {name: 'other', max: 3}]), uploadPicture)
+router.patch('/upload/:id', parser.fields([{name: 'cover', max: 1}, {name: 'other', max: 3}]), uploadPicture)
 
 // @route Post /business/event
 // @desc Add a business event

@@ -67,14 +67,34 @@ const getNearest = async (req, res) => {
 }
 
 const getMyBusiness = async (req, res) => {
-	const business = await Business.findOne({admin: req.user._id})
+	const business = await Business
+		.findOne({admin: req.user._id})
+		.populate('events', 'name description')
+		.populate({
+			path: 'reviews',
+			populate: ({
+				path: 'madeBy',
+				model: 'User',
+				select: 'username email'
+			})
+		})
 	if (!business) return res.status(404).json({business: 'You have no business'})
 
 	res.send(business)
 }
 
 const getOne = async (req, res) => {
-	const business = await Business.findById(req.params.id).populate('events').populate('reviews')
+	const business = await Business
+		.findById(req.params.id)
+		.populate('events', 'name description')
+		.populate({
+			path: 'reviews',
+			populate: ({
+				path: 'madeBy',
+				model: 'User',
+				select: 'username email'
+			})
+		})
 	if(!business) return res.status(404).json({business: 'The business was not found'})
 
 	res.send(business)
@@ -106,18 +126,22 @@ const update = async (req, res) => {
 }
 
 const uploadPicture = async (req, res) => {
+	console.log('reached here')
 	const files = req.files
 	if(!files) return res.status(400).json({image: 'Must provide an image'})
 
 	const coverPhoto = files.cover[0]
-	const pictures = files.other.map((pic) => pic.path)
+	let pictures
+	if(files.other){
+		pictures = files.other.map((pic) => pic.path)
+	}
 	
 	// Check if the user that sent the request is the admin of the business
 	const business = await Business.findById(req.params.id)
 	if(!business) return res.status(404).json({business: 'The business was not found'})
-	if(req.user._id != business.admin) {
-		res.send('Access Denied')
-	}
+	// if(req.user._id != business.admin) {
+	// 	res.send('Access Denied')
+	// }
 
 	await business.updateOne({coverPhoto: coverPhoto.path, pictures: pictures})
 	res.send(business)
