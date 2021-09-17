@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const express = require('express')
 const jwt = require('jsonwebtoken')
+require('dotenv').config()
 
 const user = require('./user')
 const auth = require('./auth')

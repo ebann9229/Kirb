@@ -11,7 +11,8 @@ const {
 	like,
 	review,
 	approve,
-	getMyBusiness
+	getMyBusiness,
+	getAllSuperAdmin
 } = require('../controllers/businessController')
 // MIddlewares
 const auth = require('../middlewares/auth')
@@ -24,12 +25,16 @@ const router = express.Router()
 // @route POST /businesses
 // @desc Save a new business
 // @access Business Admins
-router.post('/', create)
+router.post('/',auth, isAdmin, create)
 
 // @route GET /business
 // @desc Get all businesses
 // @access Public
 router.get('/', getAll)
+
+router.get('/all', auth, isSuperAdmin, getAllSuperAdmin)
+
+router.get('/own', auth, isAdmin, getMyBusiness )
 
 // @route GET /business
 // @desc Get the nearest businesses
@@ -54,16 +59,16 @@ router.delete('/:id', auth, isAdmin, remove)
 // @route Patch /business/upload/id
 // @desc Add a business photo
 // @access Business Admins
-router.patch('/upload/:id', parser.fields([{name: 'cover', max: 1}, {name: 'other', max: 20}]), uploadPicture)
+router.patch('/upload/:id',auth, isAdmin, parser.fields([{name: 'cover', max: 1}, {name: 'other', max: 20}]), uploadPicture)
 
 // @route Post /business/event
 // @desc Add a business event
 // @access Business Admins
-router.post('/event',  createEvent)
+router.post('/event', auth, isAdmin, createEvent)
 
 router.post('/like',auth, like)
 router.post('/review',auth, review)
 router.patch('/approve/:id',auth, isSuperAdmin, approve)
-router.get('/own', auth, isAdmin, getMyBusiness )
+
 
 module.exports = router

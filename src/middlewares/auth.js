@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-
+require('dotenv').config()
 module.exports = function (req, res, next) {
 	const token = req.header('Authorization')
 
@@ -11,6 +11,7 @@ module.exports = function (req, res, next) {
 		next()
 	}
 	catch (ex) {
+		console.log(ex)
 		res.status(400).send('Invalid token.')
 	}
 }

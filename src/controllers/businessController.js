@@ -16,7 +16,7 @@ const create = async (req, res) => {
 		location: {
 			coordinates: location
 		},
-		admin: req.body.user_id,
+		admin: req.user._id,
 		description: req.body.description,
 		phoneNumber: req.body.phoneNumber,
 		websiteUrl: req.body.websiteUrl,
@@ -32,6 +32,11 @@ const create = async (req, res) => {
 	res.status(200).json({business: business})
 }
 
+const getAllSuperAdmin = async (req, res) => {
+	const businesses = await Business.find()
+
+	res.send(businesses)
+}
 const getAll = async (req, res) => {
 	let match = {accepted: true}
 
@@ -139,9 +144,9 @@ const uploadPicture = async (req, res) => {
 	// Check if the user that sent the request is the admin of the business
 	const business = await Business.findById(req.params.id)
 	if(!business) return res.status(404).json({business: 'The business was not found'})
-	// if(req.user._id != business.admin) {
-	// 	res.send('Access Denied')
-	// }
+	if(req.user._id != business.admin) {
+		res.send('Access Denied')
+	}
 
 	await business.updateOne({coverPhoto: coverPhoto.path, pictures: pictures})
 	res.send(business)
@@ -257,5 +262,6 @@ module.exports = {
 	like,
 	createEvent,
 	approve,
-	getMyBusiness
+	getMyBusiness,
+	getAllSuperAdmin
 }
