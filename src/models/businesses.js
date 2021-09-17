@@ -47,7 +47,7 @@ const businessSchema = mongoose.Schema({
 		type: String,
 	},
 	accepted: {
-		type: Boolean
+		type: Boolean,
 	},
 	coverPhoto: {
 		type: String

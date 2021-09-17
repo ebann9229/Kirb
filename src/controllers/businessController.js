@@ -55,16 +55,28 @@ const getNearest = async (req, res) => {
 	const latt = req.query.latt
 	const long = req.query.long
 
-	const businesses = await Business.aggregate([
-		{ '$geoNear': {
-			'near': {
-				'type': 'Point',
-				'coordinates': [long, latt]
-			},
-			'distanceField': 'distance',
-			'spherical': true
-		}}
-	])
+	// const businesses = await Business.aggregate([
+	// 	{ '$geoNear': {
+	// 		'near': {
+	// 			'type': 'Point',
+	// 			'coordinates': [long, latt]
+	// 		},
+	// 		'distanceField': 'distance',
+	// 		'spherical': true
+	// 	}}
+	// ])
+
+	const businesses = await Business.find({
+			location: {
+			$near: {
+				$maxDistance: 1000,
+				$geometry: {
+					type: 'Point',
+					coordinates: [long, latt]
+					}
+				}
+			}
+		})
 
 	if(!businesses) return res.status(404).json({business: 'No nearby businesses found'})
 

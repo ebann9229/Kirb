@@ -46,10 +46,7 @@ router.get('/near', getNearest)
 // @access Public
 router.get('/:id', getOne)
 
-// @route Update /business/id
-// @desc Update a business
-// @access Business Admins
-router.patch('/:id',auth, isAdmin, update)
+
 
 // @route Delete /business/id
 // @desc Delete a business
@@ -70,5 +67,9 @@ router.post('/like',auth, like)
 router.post('/review',auth, review)
 router.patch('/approve/:id',auth, isSuperAdmin, approve)
 
+// @route Update /business/id
+// @desc Update a business
+// @access Business Admins
+router.patch('/:id',auth, isAdmin, update)
 
 module.exports = router
